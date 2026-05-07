@@ -1,0 +1,60 @@
+services:
+  frontend_server:
+    extends:
+      file: compose.yaml
+      service: frontend_server
+    build:
+      args:
+        - VITE_BACKEND_BASE_URL=${VITE_BACKEND_BASE_URL}
+    ports:
+      - 5000:5000
+
+  backend_server:
+    extends:
+      file: compose.yaml
+      service: backend_server
+    environment:
+      - PORT=${PORT}
+      - CORS_ORIGIN=${CORS_ORIGIN}
+      - DB_HOST=${DB_HOST}
+      - DB_USER=${DB_USER}
+      - DB_DATABASE=${DB_DATABASE}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - PICTURE_FILE_URI=${PICTURE_FILE_URI}
+      - PICTURE_FILE_MIME_TYPE=${PICTURE_FILE_MIME_TYPE}
+      - BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET}
+      - BETTER_AUTH_URL=${BETTER_AUTH_URL}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - GOOGLE_REDIRECT_URI=${GOOGLE_REDIRECT_URI}
+    volumes:
+      - C:\\img-data:/app/uploads
+    ports:
+      - 3000:3000
+
+  psql_server:
+    extends:
+      file: compose.yaml
+      service: psql_server
+    environment:
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_DB=${DB_DATABASE}
+    volumes:
+      - C:\\psql-data:/var/lib/postgresql
+      - ./psql:/docker-entrypoint-initdb.d
+    shm_size: 256mb
+    ports:
+      - 5433:5432
+
+  reverse_proxy:
+    extends:
+      file: compose.yaml
+      service: reverse_proxy
+    volumes:
+      - ./nginx/nginx.dev.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/key.pem:/etc/nginx/key.pem:ro
+      - ./nginx/cert.pem:/etc/nginx/cert.pem:ro
+    ports:
+      - 80:80
+      - 443:443

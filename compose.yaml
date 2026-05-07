@@ -1,0 +1,23 @@
+services:
+  frontend_server:
+    build:
+      context: ./frontend
+    container_name: frontend
+
+  backend_server:
+    build: ./backend
+    container_name: backend
+    depends_on:
+      - psql_server
+
+  psql_server:
+    image: postgres
+    container_name: mysql
+    # volumes:
+    #   - mysql_data:/var/lib/mysql
+
+  reverse_proxy:
+    image: nginx
+    depends_on:
+      - backend_server
+      - frontend_server
